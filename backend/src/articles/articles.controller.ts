@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, Req, UseGuards, HttpStatus, HttpException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Request } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 interface Article {
   id: number;
@@ -90,8 +91,108 @@ export class ArticlesController {
     }
   ];
 
+    @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Create a new article' })
+  @ApiBody({
+    description: 'Article data',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        content: { type: 'string' },
+        author: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } }
+      },
+      required: ['title', 'content', 'author']
+    }
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Article created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        requestId: { type: 'string' },
+        article: {
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            author: { type: 'string' },
+            publishedAt: { type: 'string' },
+            tags: { type: 'array', items: { type: 'string' } },
+            excerpt: { type: 'string' }
+          }
+        },
+        message: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Unauthorized',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+        error: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  createArticle(
+    @Body() articleData: { title: string; content: string; author: string; tags?: string[] },
+    @Req() req: Request & { id: string }
+  ) {
+    const requestId = req.id;
+
+    console.log(`[${requestId}] POST /articles - Creating new article:`, articleData);
+
+    // Validate required fields
+    if (!articleData.title || !articleData.content || !articleData.author) {
+      throw new HttpException({
+        requestId,
+        error: 'Bad request',
+        message: 'Title, content, and author are required'
+      }, HttpStatus.BAD_REQUEST);
+    }
+
+    // Generate new ID (in real app, this would be handled by database)
+    const newId = Math.max(...this.articles.map(a => a.id), 0) + 1;
+
+    // Create excerpt from content (first 150 characters)
+    const excerpt = articleData.content.length > 150
+      ? articleData.content.substring(0, 150) + '...'
+      : articleData.content;
+
+    // Create new article
+    const newArticle: Article = {
+      id: newId,
+      title: articleData.title,
+      content: articleData.content,
+      author: articleData.author,
+      publishedAt: new Date().toISOString().split('T')[0],
+      tags: articleData.tags || [],
+      excerpt
+    };
+
+    // Add to articles array
+    this.articles.unshift(newArticle); // Add to beginning
+
+    console.log(`[${requestId}] Created article with ID ${newId}`);
+
+    return {
+      requestId,
+      article: newArticle,
+      message: 'Article created successfully'
+    };
+  }
+
   @Get()
-  @ApiOperation({ summary: 'Get articles with search functionality' })
+  @ApiOperation({ summary: 'Get all articles with optional search' })
   @ApiQuery({ name: 'search', required: false, description: 'Search term for article titles and content' })
   @ApiResponse({
     status: 200,
