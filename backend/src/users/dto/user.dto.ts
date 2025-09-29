@@ -3,15 +3,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../user.entity';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'john.doe@example.com' })
+  @ApiProperty({ example: 'admin@test.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: 'Kantapat' })
   @IsString()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe' })
+  @ApiProperty({ example: 'Sangjan' })
   @IsString()
   lastName: string;
 
@@ -27,7 +27,7 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  @ApiPropertyOptional({ example: 'john.doe@example.com' })
+  @ApiPropertyOptional({ example: 'admin@test.com' })
   @IsOptional()
   @IsEmail()
   email?: string;
