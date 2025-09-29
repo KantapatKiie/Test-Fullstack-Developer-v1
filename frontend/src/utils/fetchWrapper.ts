@@ -34,6 +34,13 @@ class FetchWrapper {
    */
   private getAccessToken(): string | null {
     try {
+      // First try to get from direct localStorage (where authService stores it)
+      const directToken = localStorage.getItem('access_token');
+      if (directToken) {
+        return directToken;
+      }
+
+      // Fallback: try to get from auth-storage (Zustand store)
       const authData = localStorage.getItem('auth-storage');
       if (authData) {
         const parsed = JSON.parse(authData);
@@ -90,7 +97,8 @@ class FetchWrapper {
     try {
       console.log(`[FetchWrapper] ${fetchOptions.method || 'GET'} ${fullUrl}`, {
         requestId: headers.get('x-request-id'),
-        hasAuth: headers.has('Authorization')
+        hasAuth: headers.has('Authorization'),
+        authToken: headers.get('Authorization') ? 'Bearer ***' : 'No token'
       });
 
       const response = await fetch(fullUrl, {

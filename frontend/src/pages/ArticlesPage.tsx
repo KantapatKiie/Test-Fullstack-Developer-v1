@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "../hooks/useDebounce";
 import { fetchWrapper } from "../utils/fetchWrapper";
 import { useAuthStore } from "../store/authStore";
@@ -72,6 +73,7 @@ const ArticlesPage: React.FC = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
@@ -202,6 +204,11 @@ const ArticlesPage: React.FC = () => {
 
     setCreating(true);
     try {
+      // Debug: Check if token exists
+      const token = localStorage.getItem('access_token');
+      console.log('Debug - Access token exists:', !!token);
+      console.log('Debug - Auth state:', isAuthenticated);
+
       const dummyArticle = {
         title: `Test Article ${Date.now()}`,
         content: `This is a dummy article created for testing authentication. Created at ${new Date().toLocaleString()}`,
@@ -209,39 +216,83 @@ const ArticlesPage: React.FC = () => {
         tags: ["test", "auth", "dummy"],
       };
 
-      const response = await fetchWrapper.get(
-        `/demo/echo?x=test-auth-${Date.now()}&title=${encodeURIComponent(
-          dummyArticle.title
-        )}`
-      );
+      // Use POST API to create article
+      const response = await fetchWrapper.post("/articles", dummyArticle);
+
+      // Check if there's an error in the response
+      if (response.error) {
+        if (response.status === 401) {
+          toast.error("🚫 กรุณา Login ก่อนทำรายการ");
+          return;
+        } else {
+          toast.error(`❌ ${response.error}`);
+          return;
+        }
+      }
 
       if (response.data) {
-        toast.success("✅ สร้าง Dummy Article สำเร็จ! (Echo Response)");
+        toast.success("✅ สร้าง Dummy Article สำเร็จ!");
 
-        // เพิ่ม article ใหม่ลง localStorage และ state
-        const newArticle: Article = {
-          id: Date.now(),
-          title: dummyArticle.title,
-          content: dummyArticle.content,
-          author: dummyArticle.author,
-          publishedAt: new Date().toISOString().split("T")[0],
-          tags: dummyArticle.tags,
-        };
+        // Check if the response contains the created article
+        let createdArticle: Article;
+        const responseData = response.data as any;
+        
+        if (responseData.article) {
+          // API returns article in response.data.article format
+          createdArticle = responseData.article;
+        } else if (responseData.id) {
+          // API returns article directly in response.data
+          createdArticle = responseData as Article;
+        } else {
+          // Fallback: create article object with API response data
+          createdArticle = {
+            id: responseData.id || Date.now(),
+            title: dummyArticle.title,
+            content: dummyArticle.content,
+            author: dummyArticle.author,
+            publishedAt: responseData.publishedAt || new Date().toISOString().split("T")[0],
+            tags: dummyArticle.tags,
+          };
+        }
 
-        const updatedArticles = [newArticle, ...articles];
+        // Update the articles list with the newly created article
+        const updatedArticles = [createdArticle, ...articles];
         setArticles(updatedArticles);
+        
+        // Also update localStorage for persistence
         localStorage.setItem("articles", JSON.stringify(updatedArticles));
+        
+        console.log("Created article:", createdArticle);
       }
     } catch (error: any) {
-      if (
-        error.message.includes("401") ||
-        error.message.includes("Unauthorized")
-      ) {
+      console.error("Create dummy article error:", error);
+      
+      // Check if it's a 401 Unauthorized error
+      if (error.message.includes("401") || error.message.includes("Unauthorized")) {
         toast.error("🚫 กรุณา Login ก่อนทำรายการ");
       } else {
-        toast.error(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+        // Try to extract error message from API response
+        let errorMessage = "เกิดข้อผิดพลาดไม่ทราบสาเหตุ";
+        
+        try {
+          // If error has a response body, try to parse it
+          if (error.message) {
+            // Check if the error message contains a JSON response
+            const jsonMatch = error.message.match(/\{.*\}/);
+            if (jsonMatch) {
+              const errorData = JSON.parse(jsonMatch[0]);
+              errorMessage = errorData.message || errorMessage;
+            } else {
+              errorMessage = error.message;
+            }
+          }
+        } catch (parseError) {
+          // If parsing fails, use the original error message
+          errorMessage = error.message || errorMessage;
+        }
+        
+        toast.error(`❌ ${errorMessage}`);
       }
-      console.error("Create dummy article error:", error);
     } finally {
       setCreating(false);
     }
@@ -269,12 +320,20 @@ const ArticlesPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <button
-            onClick={handleBackToList}
-            className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors"
-          >
-            ← Back to Articles
-          </button>
+          <div className="mb-6 flex items-center justify-between">
+            <button
+              onClick={handleBackToList}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors"
+            >
+              ← Back to Articles
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="text-gray-600 hover:text-gray-800 flex items-center gap-2 transition-colors"
+            >
+              🏠 Back to Home
+            </button>
+          </div>
 
           {loadingDetail ? (
             <div className="bg-white rounded-lg shadow-md p-8">
@@ -335,6 +394,16 @@ const ArticlesPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back to Home Button */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors font-medium"
+          >
+            ← Back to Home
+          </button>
+        </div>
+        
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">Articles</h1>
