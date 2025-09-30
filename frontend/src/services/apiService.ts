@@ -7,14 +7,6 @@ import axios, {
 } from 'axios';
 import toast from 'react-hot-toast';
 
-interface RequestMetadata {
-  startTime: Date;
-}
-
-interface ExtendedInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
-  metadata?: RequestMetadata;
-}
-
 class ApiService {
   private api: AxiosInstance;
   private isRefreshing = false;
