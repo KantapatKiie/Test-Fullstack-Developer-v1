@@ -1,0 +1,50 @@
+{
+  "Frontend Health Check" : {
+    "transaction" : "Frontend Health Check",
+    "sampleCount" : 150,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 4.513333333333332,
+    "medianResTime" : 4.0,
+    "minResTime" : 1.0,
+    "maxResTime" : 14.0,
+    "pct1ResTime" : 7.0,
+    "pct2ResTime" : 7.0,
+    "pct3ResTime" : 10.940000000000055,
+    "throughput" : 3.3310386178410427,
+    "receivedKBytesPerSec" : 2.7422515183984366,
+    "sentKBytesPerSec" : 0.396862022828718
+  },
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 300,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 4.000000000000001,
+    "medianResTime" : 4.0,
+    "minResTime" : 1.0,
+    "maxResTime" : 14.0,
+    "pct1ResTime" : 6.0,
+    "pct2ResTime" : 7.0,
+    "pct3ResTime" : 7.0,
+    "throughput" : 6.3772798775562265,
+    "receivedKBytesPerSec" : 5.25004583669912,
+    "sentKBytesPerSec" : 0.7411096732706942
+  },
+  "Load Frontend App" : {
+    "transaction" : "Load Frontend App",
+    "sampleCount" : 150,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 3.4866666666666664,
+    "medianResTime" : 3.0,
+    "minResTime" : 1.0,
+    "maxResTime" : 7.0,
+    "pct1ResTime" : 5.0,
+    "pct2ResTime" : 6.0,
+    "pct3ResTime" : 7.0,
+    "throughput" : 3.3317045000222114,
+    "receivedKBytesPerSec" : 2.7427997007018794,
+    "sentKBytesPerSec" : 0.3774196503931411
+  }
+}
