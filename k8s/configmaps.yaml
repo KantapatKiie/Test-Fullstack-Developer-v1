@@ -10,7 +10,9 @@ data:
   PORT: "3000"
   CORS_ORIGIN: "http://159.65.12.95:30080"
   JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
-  JWT_EXPIRES_IN: "24h"
+  JWT_EXPIRATION: "24h"
+  JWT_REFRESH_SECRET: "your-super-secret-refresh-jwt-key-change-in-production"
+  JWT_REFRESH_EXPIRATION: "7d"
   
 ---
 apiVersion: v1
@@ -21,4 +23,4 @@ metadata:
   labels:
     app: frontend
 data:
-  VITE_API_URL: "http://159.65.12.95:30000/api"
+  VITE_API_BASE_URL: "http://159.65.12.95:30000/api"

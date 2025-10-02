@@ -26,7 +26,7 @@ spec:
           mountPath: /tmp
       containers:
       - name: frontend
-        image: fullstack-app-frontend:v6
+        image: fullstack-app-frontend:v8
         imagePullPolicy: Never
         ports:
         - containerPort: 8080

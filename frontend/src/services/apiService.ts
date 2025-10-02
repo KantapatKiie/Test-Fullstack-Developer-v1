@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { 
   type AxiosInstance, 
   type AxiosRequestConfig, 
@@ -7,13 +8,6 @@ import axios, {
 } from 'axios';
 import toast from 'react-hot-toast';
 
-interface RequestMetadata {
-  startTime: Date;
-}
-
-interface ExtendedInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
-  metadata?: RequestMetadata;
-}
 
 class ApiService {
   private api: AxiosInstance;
