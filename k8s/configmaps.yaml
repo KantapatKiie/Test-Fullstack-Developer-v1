@@ -8,7 +8,7 @@ metadata:
 data:
   NODE_ENV: "production"
   PORT: "3000"
-  CORS_ORIGIN: "http://frontend-service.smart-police.svc.cluster.local"
+  CORS_ORIGIN: "http://159.65.12.95:30080"
   JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
   JWT_EXPIRES_IN: "24h"
   
@@ -21,4 +21,4 @@ metadata:
   labels:
     app: frontend
 data:
-  VITE_API_URL: "http://backend-service.smart-police.svc.cluster.local:3000/api"
+  VITE_API_URL: "http://159.65.12.95:30000/api"
